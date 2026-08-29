@@ -1,0 +1,38 @@
+.header {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  @media (min-width: 480px) {
+    margin: 1.5rem 0;
+  }
+
+  @media (min-width: 767px) {
+    margin: 35px 0;
+  }
+
+  .logo {
+    color: var(--white);
+    font-size: 1.25rem;
+    line-height: 1.5;
+    font-weight: 700;
+    text-decoration: none;
+
+    @media (min-width: 480px) {
+      font-size: 1.5rem;
+    }
+
+    @media (min-width: 767px) {
+      font-size: 1.75rem;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  svg {
+    fill: var(--white);
+  }
+}

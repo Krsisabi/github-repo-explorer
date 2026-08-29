@@ -1,0 +1,51 @@
+.repoItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 15px;
+  background-color: var(--gray-400);
+  color: var(--white);
+
+  .nameRepo {
+    font-weight: bold;
+    line-height: 1;
+    margin: 0 8px;
+    color: var(--white);
+    margin: initial;
+    text-decoration: none;
+
+    @media (min-width: 767px) {
+      font-size: 1.5rem;
+      line-height: 1.5;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .descriptionBlock {
+    font-size: 0.75rem;
+    color: var(--gray);
+
+    @media (min-width: 767px) {
+      font-size: 1rem;
+    }
+  }
+
+  .link {
+    text-align: end;
+    color: var(--gray-100);
+    text-decoration: none;
+
+    @media (min-width: 767px) {
+      font-size: 1.5rem;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

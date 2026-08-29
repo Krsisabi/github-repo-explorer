@@ -1,24 +1,22 @@
-import { useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
 
-import { useSearchRepoQuery } from './services/api';
+import { REPO_PAGE_ROUTE } from './constants/routes';
+import { Container } from './components/Container';
+import { Header } from './components/Header';
+import { Main } from './pages/Main';
+import { Repo } from './pages/Repo';
+import { Error } from './pages/Error';
 
 function App() {
-  const [searchValue, setSearchValue] = useState('');
-
-  const { data, isLoading, error } = useSearchRepoQuery({ name: searchValue });
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error : {(error as Error).message}</p>;
-
   return (
-    <div>
-      <input
-        type="text"
-        value={searchValue}
-        onChange={(e) => setSearchValue(e.target.value)}
-      />
-      <div style={{ color: 'white' }}>{JSON.stringify(data, null, 2)}</div>
-    </div>
+    <Container>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Main />} />
+        <Route path={REPO_PAGE_ROUTE} element={<Repo />} />
+        <Route path="*" element={<Error />} />
+      </Routes>
+    </Container>
   );
 }
 
