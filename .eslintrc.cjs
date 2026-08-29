@@ -41,4 +41,5 @@ module.exports = {
       },
     ],
   },
+  "ignore": ["__generated__/"]
 };

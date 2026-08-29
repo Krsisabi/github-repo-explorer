@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run codegen",
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "codegen": "graphql-codegen --config graphql-codegen.ts",
+    "codegen:watch": "graphql-codegen --config graphql-codegen.ts --watch",
+    "schema": "curl -o schema.docs.graphql https://docs.github.com/public/schema.docs.graphql"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.9.5",
@@ -20,6 +24,8 @@
     "vite-plugin-svgr": "^3.2.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^4.0.1",
+    "@graphql-codegen/client-preset": "^4.0.1",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
