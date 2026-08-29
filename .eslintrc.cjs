@@ -11,7 +11,17 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  overrides: [],
+  overrides: [
+    {
+      files: ['src/**/*[sS]lice.ts'],
+      rules: {
+        'no-param-reassign': [
+          'error',
+          { props: true, ignorePropertyModificationsFor: ['state'] },
+        ],
+      },
+    },
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
