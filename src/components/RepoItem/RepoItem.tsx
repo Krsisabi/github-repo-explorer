@@ -21,8 +21,6 @@ export const RepoItem = ({
     ? new Date(committedDate).toLocaleDateString('en-US', options)
     : undefined;
 
-  const styledName = name.length > 15 ? name.slice(0, 15) + '...' : name;
-
   const urlObj = new URL(url);
   const username = urlObj.pathname.split('/')[1];
 
@@ -35,7 +33,7 @@ export const RepoItem = ({
         className={styles.nameRepo}
         title={url}
       >
-        {styledName}
+        {name}
       </a>
       <div className={styles.descriptionBlock}>
         {formattedDate && <p>Last commit - {formattedDate}</p>}

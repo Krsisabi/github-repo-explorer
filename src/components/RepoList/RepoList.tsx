@@ -68,11 +68,11 @@ export const RepoList = () => {
   if (typedError?.message) {
     return (
       <div className={styles.parentMessage}>
-        <p className={styles.message}>
+        <div className={styles.message}>
           <span>Что-то пошло не так</span>
           <h3 className={styles.error}>{typedError.name}</h3>
           <h3 className={styles.error}>{typedError.message}</h3>
-        </p>
+        </div>
       </div>
     );
   }
