@@ -11,7 +11,9 @@ export type PaginationProps = {
   pageSize: number;
   siblingCount?: number;
   currentPage: number;
-  onPageChange: React.Dispatch<React.SetStateAction<number>>;
+  onPageChange:
+    | React.Dispatch<React.SetStateAction<number>>
+    | ((value: number) => void);
 };
 
 export const Pagination = (props: PaginationProps) => {

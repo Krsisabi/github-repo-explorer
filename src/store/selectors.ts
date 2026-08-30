@@ -9,3 +9,8 @@ export const getReposSearchValue = createSelector(
   getReposStore,
   ({ searchValue }) => searchValue
 );
+
+export const getIsSearchValueChanged = createSelector(
+  getReposStore,
+  ({ isSearchValueChanged }) => isSearchValueChanged
+);

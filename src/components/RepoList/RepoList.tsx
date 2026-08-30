@@ -1,9 +1,13 @@
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 
 import { useAppSelector } from '~/hooks/redux';
 import { useLazyGetReposQuery, useLazySearchRepoQuery } from '~/services/api';
-import { getReposSearchValue } from '~/store/selectors';
+import {
+  getIsSearchValueChanged,
+  getReposSearchValue,
+} from '~/store/selectors';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 import { RepoItem } from '../RepoItem';
 import { Pagination } from '../Pagination';
@@ -14,6 +18,7 @@ const PageSize = 10;
 
 export const RepoList = () => {
   const searchValue = useAppSelector(getReposSearchValue);
+  const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
   const debouncedSearchValue = useDebounce(searchValue, 500);
 
   const [triggerGetRepos, resultGetRepos] = useLazyGetReposQuery();
@@ -22,7 +27,7 @@ export const RepoList = () => {
     ? resultSearchRepo
     : resultGetRepos;
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
 
   useLayoutEffect(() => {
     if (!debouncedSearchValue) {
@@ -33,6 +38,8 @@ export const RepoList = () => {
     triggerSearchRepo({
       name: debouncedSearchValue,
     });
+
+    if (isSearchValueChanged) setCurrentPage(1);
   }, [debouncedSearchValue]);
 
   const currentTableData = useMemo(() => {
