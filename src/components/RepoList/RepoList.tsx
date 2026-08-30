@@ -79,7 +79,7 @@ export const RepoList = () => {
 
   return (
     <>
-      <div className={styles.repoList}>
+      <div className={styles.repoList} data-testid="repo-list">
         {currentTableData?.map((el) => (
           <RepoItem key={el.id} {...el} />
         ))}

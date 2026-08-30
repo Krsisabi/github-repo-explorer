@@ -46,7 +46,7 @@ export const Pagination = (props: PaginationProps) => {
   const lastPage = paginationRange.at(-1);
 
   return (
-    <ul className={styles.paginationContainer}>
+    <ul className={styles.paginationContainer} data-testid="pagination-block">
       <li
         className={clsx(styles.paginationItem, {
           [styles.disabled]: currentPage === 1,
@@ -56,7 +56,10 @@ export const Pagination = (props: PaginationProps) => {
           onPrevious();
         }}
       >
-        <div className={`${styles.arrow} ${styles.left}`} />
+        <div
+          className={`${styles.arrow} ${styles.left}`}
+          data-testid="left-arrow"
+        />
       </li>
       {paginationRange?.map((pageNumber, i) => {
         if (pageNumber === DOTS) {
@@ -95,7 +98,10 @@ export const Pagination = (props: PaginationProps) => {
         }}
         key="next"
       >
-        <div className={`${styles.arrow} ${styles.right}`} />
+        <div
+          className={`${styles.arrow} ${styles.right}`}
+          data-testid="right-arrow"
+        />
       </li>
     </ul>
   );

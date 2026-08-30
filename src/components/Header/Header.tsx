@@ -9,7 +9,7 @@ export const Header = () => (
       GitRepoFinder
     </Link>
     <a href="https://github.com/" target="_blank" rel="noreferrer">
-      <GitIcon />
+      <GitIcon data-testid="git-icon" />
     </a>
   </header>
 );
