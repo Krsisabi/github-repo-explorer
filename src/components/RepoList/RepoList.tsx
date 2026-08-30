@@ -1,46 +1,45 @@
 import { useLayoutEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { useAppSelector } from '~/hooks/redux';
 import { useLazyGetReposQuery, useLazySearchRepoQuery } from '~/services/api';
-import {
-  getIsSearchValueChanged,
-  getReposSearchValue,
-} from '~/store/selectors';
-import { useDebounce } from '~/hooks/useDebounce';
+import { getIsSearchValueChanged } from '~/store/selectors';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 import { RepoItem } from '../RepoItem';
 import { Pagination } from '../Pagination';
+import { SEARCH_KEY } from '../SearchInput';
 
 import styles from './RepoList.module.scss';
 
 const PageSize = 10;
 
 export const RepoList = () => {
-  const searchValue = useAppSelector(getReposSearchValue);
+  const [searchParams] = useSearchParams();
+  const searchQueryParam = searchParams.get(SEARCH_KEY);
+
   const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
-  const debouncedSearchValue = useDebounce(searchValue, 500);
 
   const [triggerGetRepos, resultGetRepos] = useLazyGetReposQuery();
   const [triggerSearchRepo, resultSearchRepo] = useLazySearchRepoQuery();
-  const { data, isFetching, error } = debouncedSearchValue
+  const { data, isFetching, error } = searchQueryParam
     ? resultSearchRepo
     : resultGetRepos;
 
   const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
 
   useLayoutEffect(() => {
-    if (!debouncedSearchValue) {
+    if (!searchQueryParam) {
       triggerGetRepos({});
       return;
     }
 
     triggerSearchRepo({
-      name: debouncedSearchValue,
+      name: searchQueryParam,
     });
 
     if (isSearchValueChanged) setCurrentPage(1);
-  }, [debouncedSearchValue]);
+  }, [searchQueryParam]);
 
   const currentTableData = useMemo(() => {
     const firstPageIndex = (currentPage - 1) * PageSize;
