@@ -1,13 +1,12 @@
-import { FetchRepoQuery } from '~/__generated__/graphql';
+import { GetRepoQuery } from '~/__generated__/graphql';
 import {
   Repo,
   SearchRepoQueryResponse,
   RepoItem,
-  Repos,
   ReposQueryResponse,
 } from './types';
 
-export const mapFetchRepoResponseToRepo = (res: FetchRepoQuery): Repo => {
+export const mapFetchRepoResponseToRepo = (res: GetRepoQuery): Repo => {
   const repository = res.repository;
 
   const languages = res.repository?.languages?.nodes
@@ -28,7 +27,7 @@ export const mapFetchRepoResponseToRepo = (res: FetchRepoQuery): Repo => {
 
 export const mapReposQueryResponseToRepos = (
   res: ReposQueryResponse
-): Repos => {
+): RepoItem[] => {
   const repoItems: RepoItem[] = [];
 
   res.viewer.repositories.edges?.forEach((e) => {
@@ -46,16 +45,12 @@ export const mapReposQueryResponseToRepos = (
     repoItems.push(repoItem);
   });
 
-  return {
-    repoItems,
-    repositoryCount: res.viewer.repositories.totalCount,
-    pageInfo: res.viewer.repositories.pageInfo,
-  };
+  return repoItems;
 };
 
 export const mapSearchRepoQueryResponseToRepos = (
   res: SearchRepoQueryResponse
-): Repos => {
+): RepoItem[] => {
   const repoItems: RepoItem[] = [];
 
   const { search } = res;
@@ -73,9 +68,5 @@ export const mapSearchRepoQueryResponseToRepos = (
     repoItems.push(repoItem);
   });
 
-  return {
-    repoItems,
-    repositoryCount: search.repositoryCount,
-    pageInfo: search.pageInfo,
-  };
+  return repoItems;
 };

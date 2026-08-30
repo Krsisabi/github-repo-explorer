@@ -1,14 +1,9 @@
 import { graphql } from '~/__generated__';
 
 export const GET_REPOS = graphql(`
-  query Repos($first: Int!, $after: String) {
+  query GetRepos($first: Int!) {
     viewer {
-      repositories(first: $first, after: $after) {
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-        totalCount
+      repositories(first: $first) {
         edges {
           node {
             id
@@ -32,13 +27,8 @@ export const GET_REPOS = graphql(`
 `);
 
 export const SEARCH_REPO = graphql(`
-  query SearchRepo($name: String!, $first: Int!, $after: String) {
-    search(query: $name, type: REPOSITORY, first: $first, after: $after) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      repositoryCount
+  query SearchRepo($name: String!, $first: Int!) {
+    search(query: $name, type: REPOSITORY, first: $first) {
       edges {
         node {
           ... on Repository {
@@ -63,7 +53,7 @@ export const SEARCH_REPO = graphql(`
 `);
 
 export const GET_REPO = graphql(`
-  query FetchRepo($owner: String!, $name: String!) {
+  query GetRepo($owner: String!, $name: String!) {
     repository(owner: $owner, name: $name) {
       name
       stargazerCount

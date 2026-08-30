@@ -2,12 +2,6 @@ export type SearchRepoQueryResponse = {
   __typename?: 'Query';
   search: {
     __typename?: 'SearchResultItemConnection';
-    repositoryCount: number;
-    pageInfo: {
-      __typename?: 'PageInfo';
-      endCursor?: string | null;
-      hasNextPage: boolean;
-    };
     edges?: Array<{
       __typename?: 'SearchResultItemEdge';
       node?: {
@@ -37,12 +31,6 @@ export type ReposQueryResponse = {
     __typename?: 'User';
     repositories: {
       __typename?: 'RepositoryConnection';
-      totalCount: number;
-      pageInfo: {
-        __typename?: 'PageInfo';
-        endCursor?: string | null;
-        hasNextPage: boolean;
-      };
       edges?: Array<{
         __typename?: 'RepositoryEdge';
         node?: {
@@ -84,13 +72,4 @@ export type RepoItem = {
   url: string;
   committedDate?: string | Date | null;
   stargazersCount: number;
-};
-
-export type Repos = {
-  repoItems: RepoItem[];
-  repositoryCount: number;
-  pageInfo: {
-    endCursor?: string | null;
-    hasNextPage: boolean;
-  };
 };

@@ -2,16 +2,16 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { graphqlRequestBaseQuery } from '@rtk-query/graphql-request-base-query';
 
 import {
-  FetchRepoQuery,
-  FetchRepoQueryVariables,
-  ReposQueryVariables,
+  GetRepoQuery,
+  GetRepoQueryVariables,
+  GetReposQueryVariables,
   SearchRepoQueryVariables,
 } from '~/__generated__/graphql';
 
 import { GET_REPO, GET_REPOS, SEARCH_REPO } from './queries.graphql';
 import {
   Repo,
-  Repos,
+  RepoItem,
   ReposQueryResponse,
   SearchRepoQueryResponse,
 } from './types';
@@ -31,8 +31,8 @@ export const api = createApi({
   }),
   reducerPath: 'githabApi',
   endpoints: (build) => ({
-    getRepos: build.query<Repos, Partial<ReposQueryVariables>>({
-      query: ({ first = 10 }) => ({
+    getRepos: build.query<RepoItem[], Partial<GetReposQueryVariables>>({
+      query: ({ first = 100 }) => ({
         document: GET_REPOS,
         variables: {
           first,
@@ -42,21 +42,20 @@ export const api = createApi({
         mapReposQueryResponseToRepos(res),
     }),
     searchRepo: build.query<
-      Repos,
+      RepoItem[],
       Partial<SearchRepoQueryVariables> & Pick<SearchRepoQueryVariables, 'name'>
     >({
-      query: ({ name, first = 10, after = null }) => ({
+      query: ({ name, first = 100 }) => ({
         document: SEARCH_REPO,
         variables: {
           name,
           first,
-          after,
         },
       }),
       transformResponse: (res: SearchRepoQueryResponse) =>
         mapSearchRepoQueryResponseToRepos(res),
     }),
-    getRepo: build.query<Repo, FetchRepoQueryVariables>({
+    getRepo: build.query<Repo, GetRepoQueryVariables>({
       query: ({ owner, name }) => ({
         document: GET_REPO,
         variables: {
@@ -64,16 +63,10 @@ export const api = createApi({
           name,
         },
       }),
-      transformResponse: (res: FetchRepoQuery) =>
-        mapFetchRepoResponseToRepo(res),
+      transformResponse: (res: GetRepoQuery) => mapFetchRepoResponseToRepo(res),
     }),
   }),
 });
 
-export const {
-  useGetReposQuery,
-  useSearchRepoQuery,
-  useGetRepoQuery,
-  useLazySearchRepoQuery,
-  useLazyGetReposQuery,
-} = api;
+export const { useGetRepoQuery, useLazySearchRepoQuery, useLazyGetReposQuery } =
+  api;

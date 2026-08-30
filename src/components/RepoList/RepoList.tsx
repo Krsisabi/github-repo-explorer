@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 
 import { useAppSelector } from '~/hooks/redux';
 import { useLazyGetReposQuery, useLazySearchRepoQuery } from '~/services/api';
@@ -6,8 +6,11 @@ import { getReposSearchValue } from '~/store/selectors';
 import { useDebounce } from '~/hooks/useDebounce';
 
 import { RepoItem } from '../RepoItem';
+import { Pagination } from '../Pagination';
 
 import styles from './RepoList.module.scss';
+
+const PageSize = 10;
 
 export const RepoList = () => {
   const searchValue = useAppSelector(getReposSearchValue);
@@ -19,7 +22,7 @@ export const RepoList = () => {
     ? resultSearchRepo
     : resultGetRepos;
 
-  const repoItems = data?.repoItems;
+  const [currentPage, setCurrentPage] = useState(1);
 
   useLayoutEffect(() => {
     if (!debouncedSearchValue) {
@@ -32,6 +35,12 @@ export const RepoList = () => {
     });
   }, [debouncedSearchValue]);
 
+  const currentTableData = useMemo(() => {
+    const firstPageIndex = (currentPage - 1) * PageSize;
+    const lastPageIndex = firstPageIndex + PageSize;
+    return data?.slice(firstPageIndex, lastPageIndex);
+  }, [currentPage, data]);
+
   const typedError = error as Error | undefined;
 
   if (isFetching) {
@@ -42,7 +51,7 @@ export const RepoList = () => {
     );
   }
 
-  if (repoItems?.length === 0) {
+  if (data?.length === 0) {
     return (
       <div className={styles.parentMessage}>
         <p className={styles.message}>Nothing</p>
@@ -63,10 +72,20 @@ export const RepoList = () => {
   }
 
   return (
-    <div className={styles.repoList}>
-      {repoItems?.map((el) => (
-        <RepoItem key={el.id} {...el} />
-      ))}
-    </div>
+    <>
+      <div className={styles.repoList}>
+        {currentTableData?.map((el) => (
+          <RepoItem key={el.id} {...el} />
+        ))}
+      </div>
+      {data && (
+        <Pagination
+          currentPage={currentPage}
+          totalCount={data.length}
+          pageSize={PageSize}
+          onPageChange={setCurrentPage}
+        />
+      )}
+    </>
   );
 };
