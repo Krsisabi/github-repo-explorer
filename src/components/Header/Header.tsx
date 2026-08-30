@@ -4,12 +4,12 @@ import { ReactComponent as GitIcon } from 'assets/git-icon.svg';
 import styles from './Header.module.scss';
 
 export const Header = () => (
-  <div className={styles.header}>
+  <header className={styles.header}>
     <Link to="/" className={styles.logo}>
       GitRepoFinder
     </Link>
     <a href="https://github.com/" target="_blank" rel="noreferrer">
       <GitIcon />
     </a>
-  </div>
+  </header>
 );

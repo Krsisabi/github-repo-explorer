@@ -1,0 +1,57 @@
+.repo {
+  margin: 1.5rem 0 3rem;
+  width: 100%;
+  padding: 30px 24px 40px;
+  background-color: var(--gray-400);
+  box-shadow: unset;
+  border-radius: 15px;
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 25px 20px;
+
+  &>*:nth-child(n + 3) {
+    grid-column: 1 / span 2;
+  }
+
+  @media (min-width: 767px) {
+    grid-template-columns: 180px 1fr;
+    padding: 40px;
+    gap: 30px 40px;
+  }
+
+  .avatar {
+    border-radius: 50%;
+    max-width: 100%;
+  }
+
+  .description {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--white);
+
+    &.empty {
+      opacity: 0.75;
+    }
+  }
+}
+
+.parentMessage {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+
+  .message {
+    display: flex;
+    background-color: var(--gray-400);
+    gap: 1rem;
+    flex-direction: column;
+    color: var(--white);
+    border-radius: 15px;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .error {
+    color: var(--error);
+  }
+}
