@@ -27,8 +27,9 @@ export const RepoList = () => {
     : resultGetRepos;
 
   const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
-
   useLayoutEffect(() => {
+    if (isSearchValueChanged || !searchQueryParam) setCurrentPage(1);
+
     if (!searchQueryParam) {
       triggerGetRepos({});
       return;
@@ -37,8 +38,6 @@ export const RepoList = () => {
     triggerSearchRepo({
       name: searchQueryParam,
     });
-
-    if (isSearchValueChanged) setCurrentPage(1);
   }, [searchQueryParam]);
 
   const currentTableData = useMemo(() => {

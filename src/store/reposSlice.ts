@@ -10,8 +10,8 @@ const reposSlice = createSlice({
   name: 'repos',
   initialState,
   reducers: {
-    searchRepo: (state, action: PayloadAction<string>) => {
-      state.searchValue = action.payload;
+    searchRepo: (state, action: PayloadAction<string | undefined>) => {
+      state.searchValue = action.payload ?? state.searchValue;
       state.isSearchValueChanged = true;
     },
     setCurrentPageNumber: (state, action: PayloadAction<number>) => {

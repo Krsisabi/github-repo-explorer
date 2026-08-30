@@ -1,13 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useAppDispatch, useAppSelector } from '~/hooks/redux';
 import { searchRepo } from '~/store/reposSlice';
 import { useDebounce } from '~/hooks/useDebounce';
-import {
-  getIsSearchValueChanged,
-  getReposSearchValue,
-} from '~/store/selectors';
+import { getIsSearchValueChanged } from '~/store/selectors';
 
 import { ReactComponent as SearchIcon } from 'assets/icon-search.svg';
 import styles from './SearchInput.module.scss';
@@ -18,7 +15,7 @@ export const SearchInput = () => {
   const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const searchValue = useAppSelector(getReposSearchValue);
+  const [searchValue, setSearchValue] = useState('');
   const debouncedSearchValue = useDebounce(searchValue, 500);
   const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
 
@@ -36,11 +33,13 @@ export const SearchInput = () => {
   }, [debouncedSearchValue]);
 
   useEffect(() => {
-    dispatch(searchRepo(searchQueryParam));
+    setSearchValue(searchQueryParam);
   }, [searchQueryParam]);
 
-  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) =>
-    dispatch(searchRepo(e.currentTarget.value));
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(searchRepo());
+    setSearchValue(e.currentTarget.value);
+  };
 
   return (
     <div className={styles.search}>
