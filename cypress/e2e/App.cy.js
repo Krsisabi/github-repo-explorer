@@ -5,11 +5,11 @@ describe("App E2E", () => {
   it("should be visible start page", () => {
     cy.get('[placeholder="Search GitHub Repo..."]').should("have.value", "");
 
-    cy.contains("GitRepoFinder");
+    cy.contains("Repo Explorer");
 
     cy.get('[data-testid="git-icon"]').should("be.visible");
 
-    cy.intercept("POST", "https://api.github.com/graphql").as("graphqlRequest");
+    cy.intercept("POST", "/api/github").as("graphqlRequest");
 
     cy.contains("Searching...").should("be.visible");
 
@@ -17,11 +17,11 @@ describe("App E2E", () => {
 
     cy.get('[data-testid="repo-list"]').should('be.visible');
 
-    cy.contains("GitRepoFinder").click();
+    cy.contains("Repo Explorer").click();
 
     cy.get('[placeholder="Search GitHub Repo..."]').should("have.value", "");
 
-    cy.contains("GitRepoFinder");
+    cy.contains("Repo Explorer");
 
     cy.get('[data-testid="git-icon"]').should("be.visible");
 
@@ -33,7 +33,7 @@ describe("App E2E", () => {
 
     cy.get('[placeholder="Search GitHub Repo..."]').should("have.value", "tetris");
 
-    cy.intercept("POST", "https://api.github.com/graphql").as("graphqlRequest");
+    cy.intercept("POST", "/api/github").as("graphqlRequest");
 
     cy.contains("Searching...").should("be.visible");
 
@@ -87,7 +87,7 @@ describe("App E2E", () => {
       .invoke("attr", "href")
       .then((href) => {
         cy.contains("More...").invoke("removeAttr", "target").click();
-        cy.intercept("POST", "https://api.github.com/graphql").as(
+        cy.intercept("POST", "/api/github").as(
           "graphqlRequest"
         );
 
@@ -125,7 +125,7 @@ describe("App E2E", () => {
 
       cy.contains("CSS").should("be.visible");
 
-      cy.contains("GitRepoFinder").click();
+      cy.contains("Repo Explorer").click();
 
       cy.get('[placeholder="Search GitHub Repo..."]').should("have.value", "");
     });
