@@ -17,7 +17,13 @@ import {
 
 // A serverless function that adds the GitHub token server-side. The client
 // never sees a credential, so the bundle stays safe to publish.
-const GITHUB_PROXY_URL = '/api/github';
+//
+// graphql-request builds a `new URL()` from this value, which throws on a
+// bare path, so the origin has to be spelled out.
+const GITHUB_PROXY_URL =
+  typeof window === 'undefined'
+    ? 'http://localhost:3000/api/github'
+    : `${window.location.origin}/api/github`;
 
 // What the landing page shows before the user searches for anything.
 const DEFAULT_QUERY = 'stars:>50000 sort:stars-desc';
