@@ -12,8 +12,7 @@ export type PaginationProps = {
   siblingCount?: number;
   currentPage: number;
   onPageChange:
-    | React.Dispatch<React.SetStateAction<number>>
-    | ((value: number) => void);
+    React.Dispatch<React.SetStateAction<number>> | ((value: number) => void);
 };
 
 export const Pagination = (props: PaginationProps) => {

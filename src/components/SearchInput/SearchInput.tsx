@@ -6,7 +6,7 @@ import { searchRepo } from '~/store/reposSlice';
 import { useDebounce } from '~/hooks/useDebounce';
 import { getIsSearchValueChanged } from '~/store/selectors';
 
-import { ReactComponent as SearchIcon } from 'assets/icon-search.svg';
+import SearchIcon from '~/assets/icon-search.svg?react';
 import styles from './SearchInput.module.scss';
 
 export const SEARCH_KEY = 'search';
@@ -14,27 +14,37 @@ export const SEARCH_KEY = 'search';
 export const SearchInput = () => {
   const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const [searchValue, setSearchValue] = useState('');
-  const debouncedSearchValue = useDebounce(searchValue, 500);
   const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
 
   const searchQueryParam = searchParams.get(SEARCH_KEY) ?? '';
 
+  const [searchValue, setSearchValue] = useState(searchQueryParam);
+  const debouncedSearchValue = useDebounce(searchValue, 500);
+
+  // The URL is the source of truth: when it changes from the outside (logo
+  // click, back button), the field follows. Adjusting state during render
+  // instead of in an effect avoids a second render pass.
+  const [lastQueryParam, setLastQueryParam] = useState(searchQueryParam);
+  if (searchQueryParam !== lastQueryParam) {
+    setLastQueryParam(searchQueryParam);
+    setSearchValue(searchQueryParam);
+  }
+
   useEffect(() => {
     if (!isSearchValueChanged) return;
-    if (!debouncedSearchValue) {
-      searchParams.delete(SEARCH_KEY);
-      setSearchParams(searchParams);
-      return;
-    }
 
-    setSearchParams({ [SEARCH_KEY]: debouncedSearchValue });
-  }, [debouncedSearchValue]);
-
-  useEffect(() => {
-    setSearchValue(searchQueryParam);
-  }, [searchQueryParam]);
+    setSearchParams(
+      (params) => {
+        if (debouncedSearchValue) {
+          params.set(SEARCH_KEY, debouncedSearchValue);
+        } else {
+          params.delete(SEARCH_KEY);
+        }
+        return params;
+      },
+      { replace: true }
+    );
+  }, [debouncedSearchValue, isSearchValueChanged, setSearchParams]);
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(searchRepo());

@@ -1,9 +1,7 @@
-import { useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { useAppSelector } from '~/hooks/redux';
 import { useLazyGetReposQuery, useLazySearchRepoQuery } from '~/services/api';
-import { getIsSearchValueChanged } from '~/store/selectors';
 import { useLocalStorage } from '~/hooks/useLocalStorage';
 
 import { RepoItem } from '../RepoItem';
@@ -18,8 +16,6 @@ export const RepoList = () => {
   const [searchParams] = useSearchParams();
   const searchQueryParam = searchParams.get(SEARCH_KEY);
 
-  const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
-
   const [triggerGetRepos, resultGetRepos] = useLazyGetReposQuery();
   const [triggerSearchRepo, resultSearchRepo] = useLazySearchRepoQuery();
   const { data, isFetching, error } = searchQueryParam
@@ -27,8 +23,14 @@ export const RepoList = () => {
     : resultGetRepos;
 
   const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
+
+  // Reloading straight onto ?search=... keeps the stored page number; every
+  // later change of the query is a new search and starts from page one.
+  const isFirstRender = useRef(true);
+
   useLayoutEffect(() => {
-    if (isSearchValueChanged || !searchQueryParam) setCurrentPage(1);
+    if (!isFirstRender.current || !searchQueryParam) setCurrentPage(1);
+    isFirstRender.current = false;
 
     if (!searchQueryParam) {
       triggerGetRepos({});
@@ -38,7 +40,7 @@ export const RepoList = () => {
     triggerSearchRepo({
       name: searchQueryParam,
     });
-  }, [searchQueryParam]);
+  }, [searchQueryParam, setCurrentPage, triggerGetRepos, triggerSearchRepo]);
 
   const currentTableData = useMemo(() => {
     const firstPageIndex = (currentPage - 1) * PageSize;
