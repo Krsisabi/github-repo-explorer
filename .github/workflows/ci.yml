@@ -17,10 +17,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # Reads .nvmrc, so CI and local development cannot drift apart: a lock
+      # file written by one npm version is rejected by the other.
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version-file: '.nvmrc'
           cache: 'npm'
 
       - name: Install dependencies
