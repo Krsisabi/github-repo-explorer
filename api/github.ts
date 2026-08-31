@@ -1,15 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// The `.js` extension is required: the package is ESM, so Node resolves this
+// specifier at runtime, where extensionless paths do not exist. Vite and tsc
+// both accept it without one, which is why only a deployed function catches it.
+import {
+  PERSISTED_OPERATIONS,
+  buildVariables,
+  isOperationName,
+} from './operations.js';
+
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
-// The client is allowed to run only the operations this app actually ships.
-// Without it the proxy would be an open relay: anyone could point their own
-// queries at it and spend our token's rate limit.
-const ALLOWED_OPERATIONS = ['GetRepos', 'SearchRepo', 'GetRepo'];
+const UPSTREAM_TIMEOUT_MS = 8000;
+const MAX_BODY_LENGTH = 8000;
 
-const getOperationName = (query: unknown) => {
-  if (typeof query !== 'string') return null;
-  const match = query.match(/\b(?:query|mutation)\s+(\w+)/);
+// The document the browser sends is never forwarded. It is read for one thing
+// only - which of the three persisted operations to run - and then dropped, so
+// a caller who writes their own query and labels it `GetRepos` gets the real
+// `GetRepos` back rather than their own request executed with our token.
+const readOperationName = (body: Record<string, unknown>) => {
+  if (typeof body.operationName === 'string') return body.operationName;
+
+  const document = body.query;
+  if (typeof document !== 'string') return null;
+
+  const match = document.match(/\bquery\s+(\w+)/);
   return match ? match[1] : null;
 };
 
@@ -19,38 +34,47 @@ const wait = (ms: number) =>
   });
 
 // GitHub's GraphQL endpoint occasionally answers a heavy search with 502 from
-// its own edge. It is transient, so a couple of retries turn a broken page
-// into a slightly slower one.
+// its own edge. It is transient, so a couple of retries turn a broken page into
+// a slightly slower one. Retrying is safe here because every persisted
+// operation is a query: replaying one cannot change anything.
 const fetchWithRetry = async ({
   query,
   variables,
   token,
   attempts = 3,
 }: {
-  query: unknown;
-  variables: unknown;
+  query: string;
+  variables: Record<string, unknown>;
   token: string;
   attempts?: number;
 }) => {
-  let response: Response | undefined;
+  let lastError: unknown;
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     if (attempt > 0) await wait(300 * attempt);
 
-    response = await fetch(GITHUB_GRAPHQL_URL, {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${token}`,
-        'content-type': 'application/json',
-        'user-agent': 'github-repo-explorer',
-      },
-      body: JSON.stringify({ query, variables }),
-    });
+    try {
+      const response = await fetch(GITHUB_GRAPHQL_URL, {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${token}`,
+          'content-type': 'application/json',
+          'user-agent': 'github-repo-explorer',
+        },
+        body: JSON.stringify({ query, variables }),
+        // Without a deadline a hung upstream holds the function until the
+        // platform kills it, and the retries multiply that wait.
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+      });
 
-    if (response.status < 500) return response;
+      if (response.status < 500) return response;
+      lastError = new Error(`GitHub answered ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  return response as Response;
+  throw lastError ?? new Error('GitHub did not answer');
 };
 
 export default async function handler(
@@ -68,28 +92,68 @@ export default async function handler(
       .json({ error: 'Server is missing its GitHub token' });
   }
 
-  const body =
-    typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+  // JSON.parse throws rather than returning a value, so without the catch a
+  // single malformed request takes the whole function down with a 500 and the
+  // check below never runs.
+  let body: unknown;
+  try {
+    const raw = request.body;
+    if (typeof raw === 'string') {
+      if (raw.length > MAX_BODY_LENGTH) {
+        return response.status(413).json({ error: 'Body is too large' });
+      }
+      body = JSON.parse(raw);
+    } else {
+      body = raw;
+    }
+  } catch {
+    return response.status(400).json({ error: 'Body must be valid JSON' });
+  }
 
   if (!body || typeof body !== 'object') {
     return response.status(400).json({ error: 'Body must be valid JSON' });
   }
 
-  const operationName = getOperationName(body.query);
-  if (!operationName || !ALLOWED_OPERATIONS.includes(operationName)) {
+  const operationName = readOperationName(body as Record<string, unknown>);
+  if (!operationName || !isOperationName(operationName)) {
     return response.status(403).json({ error: 'Operation is not allowed' });
   }
 
-  const upstream = await fetchWithRetry({
-    query: body.query,
-    variables: body.variables,
-    token,
-  });
+  const variables = buildVariables(
+    operationName,
+    (body as Record<string, unknown>).variables
+  );
+  if (!variables) {
+    return response.status(400).json({ error: 'Variables are not valid' });
+  }
+
+  let upstream: Response;
+  try {
+    upstream = await fetchWithRetry({
+      query: PERSISTED_OPERATIONS[operationName],
+      variables,
+      token,
+    });
+  } catch (error) {
+    console.error('GitHub request failed', error);
+    return response.status(502).json({ error: 'GitHub is unavailable' });
+  }
+
+  // A failing GitHub edge answers with an HTML page. Forwarding that body while
+  // stamping it `application/json` makes the client library blow up inside its
+  // own parser instead of showing an error, so only a successful answer is
+  // passed through; anything else becomes one predictable envelope.
+  if (!upstream.ok) {
+    console.error(
+      'GitHub answered %s: %s',
+      upstream.status,
+      (await upstream.text()).slice(0, 500)
+    );
+    return response.status(502).json({ error: 'GitHub is unavailable' });
+  }
 
   const payload = await upstream.text();
 
-  // Repeated searches are cheap for us and invisible to the user.
-  response.setHeader('cache-control', 'public, max-age=60, s-maxage=300');
   response.setHeader('content-type', 'application/json');
-  return response.status(upstream.status).send(payload);
+  return response.status(200).send(payload);
 }
