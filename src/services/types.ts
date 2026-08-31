@@ -9,10 +9,9 @@ export type SearchRepoQueryResponse = {
         id: string;
         name: string;
         url: string;
-        stargazers: {
-          __typename?: 'StargazerConnection';
-          totalCount: number;
-        };
+        // The scalar field, not the `stargazers` connection: fine-grained
+        // tokens are refused on the connection inside a search result.
+        stargazerCount: number;
         defaultBranchRef?: {
           __typename?: 'Ref';
           target?: {

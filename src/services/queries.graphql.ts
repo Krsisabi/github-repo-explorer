@@ -12,9 +12,7 @@ export const GET_REPOS = graphql(`
             id
             name
             url
-            stargazers {
-              totalCount
-            }
+            stargazerCount
             defaultBranchRef {
               target {
                 ... on Commit {
@@ -38,9 +36,7 @@ export const SEARCH_REPO = graphql(`
             id
             name
             url
-            stargazers {
-              totalCount
-            }
+            stargazerCount
             defaultBranchRef {
               target {
                 ... on Commit {

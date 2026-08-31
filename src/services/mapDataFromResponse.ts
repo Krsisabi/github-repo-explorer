@@ -27,13 +27,13 @@ export const mapSearchRepoQueryResponseToRepos = (
 
   res.search.edges?.forEach((e) => {
     if (!e?.node) return;
-    const { id, name, url, stargazers, defaultBranchRef } = e.node;
+    const { id, name, url, stargazerCount, defaultBranchRef } = e.node;
 
     repoItems.push({
       id,
       name,
       url,
-      stargazersCount: stargazers.totalCount,
+      stargazersCount: stargazerCount,
       committedDate: defaultBranchRef?.target?.committedDate,
     });
   });

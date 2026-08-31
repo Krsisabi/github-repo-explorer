@@ -1,4 +1,4 @@
-export const config = { runtime: 'edge' };
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
@@ -7,38 +7,37 @@ const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 // queries at it and spend our token's rate limit.
 const ALLOWED_OPERATIONS = ['GetRepos', 'SearchRepo', 'GetRepo'];
 
-const json = (body: unknown, status: number) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  });
-
 const getOperationName = (query: unknown) => {
   if (typeof query !== 'string') return null;
   const match = query.match(/\b(?:query|mutation)\s+(\w+)/);
   return match ? match[1] : null;
 };
 
-export default async function handler(request: Request) {
+export default async function handler(
+  request: VercelRequest,
+  response: VercelResponse
+) {
   if (request.method !== 'POST') {
-    return json({ error: 'Method not allowed' }, 405);
+    return response.status(405).json({ error: 'Method not allowed' });
   }
 
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    return json({ error: 'Server is missing its GitHub token' }, 500);
+    return response
+      .status(500)
+      .json({ error: 'Server is missing its GitHub token' });
   }
 
-  let body: { query?: unknown; variables?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: 'Body must be valid JSON' }, 400);
+  const body =
+    typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+
+  if (!body || typeof body !== 'object') {
+    return response.status(400).json({ error: 'Body must be valid JSON' });
   }
 
   const operationName = getOperationName(body.query);
   if (!operationName || !ALLOWED_OPERATIONS.includes(operationName)) {
-    return json({ error: 'Operation is not allowed' }, 403);
+    return response.status(403).json({ error: 'Operation is not allowed' });
   }
 
   const upstream = await fetch(GITHUB_GRAPHQL_URL, {
@@ -51,13 +50,10 @@ export default async function handler(request: Request) {
     body: JSON.stringify({ query: body.query, variables: body.variables }),
   });
 
-  return new Response(upstream.body, {
-    status: upstream.status,
-    headers: {
-      'content-type':
-        upstream.headers.get('content-type') ?? 'application/json',
-      // Repeated searches are cheap for us and invisible to the user.
-      'cache-control': 'public, max-age=60, s-maxage=300',
-    },
-  });
+  const payload = await upstream.text();
+
+  // Repeated searches are cheap for us and invisible to the user.
+  response.setHeader('cache-control', 'public, max-age=60, s-maxage=300');
+  response.setHeader('content-type', 'application/json');
+  return response.status(upstream.status).send(payload);
 }
