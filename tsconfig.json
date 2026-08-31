@@ -5,22 +5,20 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite-plugin-svgr/client"],
-    "baseUrl": "./src",
+    "types": ["vite-plugin-svgr/client", "node"],
     "paths": {
-      "~/*": ["./*"]
+      "~/*": ["./src/*"]
     }
   },
-  "include": ["vite.config.ts", ".eslintrc.cjs", "src"],
+  "include": ["src", "api"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

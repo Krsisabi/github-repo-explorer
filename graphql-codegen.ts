@@ -8,6 +8,16 @@ const config: CodegenConfig = {
     'src/__generated__/': {
       preset: 'client',
       plugins: [],
+      config: {
+        // Without this, GitHub's custom scalars land as `unknown` and every
+        // read of a URL or a date needs a cast.
+        scalars: {
+          URI: 'string',
+          DateTime: 'string',
+          GitObjectID: 'string',
+          HTML: 'string',
+        },
+      },
     },
   },
 };
