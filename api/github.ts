@@ -13,6 +13,46 @@ const getOperationName = (query: unknown) => {
   return match ? match[1] : null;
 };
 
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+// GitHub's GraphQL endpoint occasionally answers a heavy search with 502 from
+// its own edge. It is transient, so a couple of retries turn a broken page
+// into a slightly slower one.
+const fetchWithRetry = async ({
+  query,
+  variables,
+  token,
+  attempts = 3,
+}: {
+  query: unknown;
+  variables: unknown;
+  token: string;
+  attempts?: number;
+}) => {
+  let response: Response | undefined;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (attempt > 0) await wait(300 * attempt);
+
+    response = await fetch(GITHUB_GRAPHQL_URL, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-type': 'application/json',
+        'user-agent': 'github-repo-explorer',
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (response.status < 500) return response;
+  }
+
+  return response as Response;
+};
+
 export default async function handler(
   request: VercelRequest,
   response: VercelResponse
@@ -40,14 +80,10 @@ export default async function handler(
     return response.status(403).json({ error: 'Operation is not allowed' });
   }
 
-  const upstream = await fetch(GITHUB_GRAPHQL_URL, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-      'user-agent': 'github-repo-explorer',
-    },
-    body: JSON.stringify({ query: body.query, variables: body.variables }),
+  const upstream = await fetchWithRetry({
+    query: body.query,
+    variables: body.variables,
+    token,
   });
 
   const payload = await upstream.text();

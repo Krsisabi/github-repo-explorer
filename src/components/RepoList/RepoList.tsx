@@ -67,12 +67,15 @@ export const RepoList = () => {
   }
 
   if (typedError?.message) {
+    // The raw GraphQL error is a wall of JSON, sometimes an upstream nginx
+    // page. Useful in the console, not on screen.
     return (
       <div className={styles.parentMessage}>
         <div className={styles.message}>
-          <span>Что-то пошло не так</span>
-          <h3 className={styles.error}>{typedError.name}</h3>
-          <h3 className={styles.error}>{typedError.message}</h3>
+          <span>Не удалось загрузить репозитории</span>
+          <h3 className={styles.error}>
+            GitHub сейчас не отвечает. Попробуйте обновить страницу.
+          </h3>
         </div>
       </div>
     );

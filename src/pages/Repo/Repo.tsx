@@ -14,8 +14,6 @@ export const Repo = () => {
     owner: owner ?? '',
   });
 
-  const typedError = error as Error | undefined;
-
   const {
     avatar,
     stargazerCount,
@@ -39,13 +37,10 @@ export const Repo = () => {
     return (
       <div className={styles.parentMessage}>
         <p className={styles.message}>
-          <span>Что-то пошло не так</span>
-          {typedError?.name && (
-            <h3 className={styles.error}>{typedError.name}</h3>
-          )}
-          {typedError?.message && (
-            <h3 className={styles.error}>{typedError.message}</h3>
-          )}
+          <span>Не удалось загрузить репозиторий</span>
+          <h3 className={styles.error}>
+            GitHub сейчас не отвечает. Попробуйте обновить страницу.
+          </h3>
         </p>
       </div>
     );
