@@ -1,10 +1,5 @@
 import { GetRepoQuery } from '~/__generated__/graphql';
-import {
-  Repo,
-  SearchRepoQueryResponse,
-  RepoItem,
-  ReposQueryResponse,
-} from './types';
+import { Repo, SearchRepoQueryResponse, RepoItem } from './types';
 
 export const mapFetchRepoResponseToRepo = (res: GetRepoQuery): Repo => {
   const repository = res.repository;
@@ -25,47 +20,22 @@ export const mapFetchRepoResponseToRepo = (res: GetRepoQuery): Repo => {
   };
 };
 
-export const mapReposQueryResponseToRepos = (
-  res: ReposQueryResponse
-): RepoItem[] => {
-  const repoItems: RepoItem[] = [];
-
-  res.viewer.repositories.edges?.forEach((e) => {
-    if (!e?.node) return null;
-    const { id, name, url, stargazers, defaultBranchRef } = e.node;
-
-    const repoItem: RepoItem = {
-      id,
-      name,
-      url,
-      stargazersCount: stargazers.totalCount,
-      committedDate: defaultBranchRef?.target?.committedDate,
-    };
-
-    repoItems.push(repoItem);
-  });
-
-  return repoItems;
-};
-
 export const mapSearchRepoQueryResponseToRepos = (
   res: SearchRepoQueryResponse
 ): RepoItem[] => {
   const repoItems: RepoItem[] = [];
 
-  const { search } = res;
+  res.search.edges?.forEach((e) => {
+    if (!e?.node) return;
+    const { id, name, url, stargazers, defaultBranchRef } = e.node;
 
-  search.edges?.forEach((e) => {
-    if (!e?.node) return null;
-    const { id, name, stargazers, url, defaultBranchRef } = e?.node;
-    const repoItem: RepoItem = {
+    repoItems.push({
       id,
       name,
       url,
       stargazersCount: stargazers.totalCount,
       committedDate: defaultBranchRef?.target?.committedDate,
-    };
-    repoItems.push(repoItem);
+    });
   });
 
   return repoItems;

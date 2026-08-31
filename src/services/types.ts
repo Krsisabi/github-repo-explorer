@@ -8,7 +8,7 @@ export type SearchRepoQueryResponse = {
         __typename?: 'Repository';
         id: string;
         name: string;
-        url: any;
+        url: string;
         stargazers: {
           __typename?: 'StargazerConnection';
           totalCount: number;
@@ -25,35 +25,8 @@ export type SearchRepoQueryResponse = {
   };
 };
 
-export type ReposQueryResponse = {
-  __typename?: 'Query';
-  viewer: {
-    __typename?: 'User';
-    repositories: {
-      __typename?: 'RepositoryConnection';
-      edges?: Array<{
-        __typename?: 'RepositoryEdge';
-        node?: {
-          __typename?: 'Repository';
-          id: string;
-          name: string;
-          url: any;
-          stargazers: {
-            __typename?: 'StargazerConnection';
-            totalCount: number;
-          };
-          defaultBranchRef?: {
-            __typename?: 'Ref';
-            target?: {
-              __typename?: 'Commit';
-              committedDate?: string | Date | null;
-            } | null;
-          } | null;
-        } | null;
-      } | null> | null;
-    };
-  };
-};
+// The landing list is the same search shape, just with a default filter.
+export type ReposQueryResponse = SearchRepoQueryResponse;
 
 export type Repo = {
   stargazerCount: number | undefined | null;
@@ -61,7 +34,7 @@ export type Repo = {
   login?: string;
   name?: string;
   description?: string | null;
-  avatar: string;
+  avatar?: string;
   updatedAt?: Date | string | null;
   url?: string;
 };
