@@ -28,3 +28,8 @@ schema.docs.graphql
 .vercel
 
 .env*
+
+# Written only when a test fails: output, not source.
+cypress/screenshots
+cypress/videos
+cypress/downloads
