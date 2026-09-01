@@ -1,9 +1,21 @@
+// The build tooling, which the app's tsconfig does not include: its `include`
+// is limited to `src` and `api`. These files used to be reachable only through
+// a `references` entry, and `tsc --noEmit` does not follow references, so they
+// were never checked at all. `npm run typecheck` now runs this project too.
 {
   "compilerOptions": {
-    "composite": true,
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "allowSyntheticDefaultImports": true
+    "types": ["node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "graphql-codegen.ts", "cypress.config.ts"]
 }
