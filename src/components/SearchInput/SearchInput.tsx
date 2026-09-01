@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { useAppDispatch, useAppSelector } from '~/hooks/redux';
-import { searchRepo } from '~/store/reposSlice';
 import { useDebounce } from '~/hooks/useDebounce';
-import { getIsSearchValueChanged } from '~/store/selectors';
 import { PAGE_KEY } from '~/constants/pagination';
 
 import SearchIcon from '~/assets/icon-search.svg?react';
@@ -13,9 +10,7 @@ import styles from './SearchInput.module.scss';
 export const SEARCH_KEY = 'search';
 
 export const SearchInput = () => {
-  const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isSearchValueChanged = useAppSelector(getIsSearchValueChanged);
 
   const searchQueryParam = searchParams.get(SEARCH_KEY) ?? '';
 
@@ -31,8 +26,21 @@ export const SearchInput = () => {
     setSearchValue(searchQueryParam);
   }
 
+  // Publishing a query is the one thing that may erase the page number, so this
+  // effect has to fire for a new query and for nothing else. It cannot rely on
+  // its own dependencies to enforce that: `setSearchParams` is a fresh function
+  // after every URL change, so React re-runs the effect when the page number
+  // changes as well. Both guards below exist to answer "did the field really
+  // produce something the URL does not have yet".
   useEffect(() => {
-    if (!isSearchValueChanged) return;
+    // Still mid-debounce. The field has moved on but `debouncedSearchValue`
+    // holds the previous query, and writing that back would undo whatever just
+    // changed the URL - clicking the logo would bounce to the old search.
+    if (debouncedSearchValue !== searchValue) return;
+
+    // The URL already carries this query. Rewriting it changes nothing except
+    // dropping PAGE_KEY, which is how paging used to die on the second click.
+    if (debouncedSearchValue === searchQueryParam) return;
 
     setSearchParams(
       (params) => {
@@ -49,10 +57,9 @@ export const SearchInput = () => {
       },
       { replace: true }
     );
-  }, [debouncedSearchValue, isSearchValueChanged, setSearchParams]);
+  }, [debouncedSearchValue, searchValue, searchQueryParam, setSearchParams]);
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(searchRepo());
     setSearchValue(e.currentTarget.value);
   };
 
