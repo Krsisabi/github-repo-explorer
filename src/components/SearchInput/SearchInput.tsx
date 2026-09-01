@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '~/hooks/redux';
 import { searchRepo } from '~/store/reposSlice';
 import { useDebounce } from '~/hooks/useDebounce';
 import { getIsSearchValueChanged } from '~/store/selectors';
+import { PAGE_KEY } from '~/constants/pagination';
 
 import SearchIcon from '~/assets/icon-search.svg?react';
 import styles from './SearchInput.module.scss';
@@ -40,6 +41,10 @@ export const SearchInput = () => {
         } else {
           params.delete(SEARCH_KEY);
         }
+        // A new query means a new result set, so the page number from the old
+        // one is meaningless - and its cursor points into results that are
+        // gone.
+        params.delete(PAGE_KEY);
         return params;
       },
       { replace: true }

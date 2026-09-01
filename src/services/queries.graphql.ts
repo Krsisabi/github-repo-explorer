@@ -4,8 +4,13 @@ import { graphql } from '~/__generated__';
 // default filter. The old GetRepos read `viewer.repositories`, which returns
 // whatever account owns the token - meaningless once the token moved server-side.
 export const GET_REPOS = graphql(`
-  query GetRepos($query: String!, $first: Int!) {
-    search(query: $query, type: REPOSITORY, first: $first) {
+  query GetRepos($query: String!, $first: Int!, $after: String) {
+    search(query: $query, type: REPOSITORY, first: $first, after: $after) {
+      repositoryCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       edges {
         node {
           ... on Repository {
@@ -13,13 +18,7 @@ export const GET_REPOS = graphql(`
             name
             url
             stargazerCount
-            defaultBranchRef {
-              target {
-                ... on Commit {
-                  committedDate
-                }
-              }
-            }
+            pushedAt
           }
         }
       }
@@ -28,8 +27,13 @@ export const GET_REPOS = graphql(`
 `);
 
 export const SEARCH_REPO = graphql(`
-  query SearchRepo($name: String!, $first: Int!) {
-    search(query: $name, type: REPOSITORY, first: $first) {
+  query SearchRepo($name: String!, $first: Int!, $after: String) {
+    search(query: $name, type: REPOSITORY, first: $first, after: $after) {
+      repositoryCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       edges {
         node {
           ... on Repository {
@@ -37,13 +41,7 @@ export const SEARCH_REPO = graphql(`
             name
             url
             stargazerCount
-            defaultBranchRef {
-              target {
-                ... on Commit {
-                  committedDate
-                }
-              }
-            }
+            pushedAt
           }
         }
       }

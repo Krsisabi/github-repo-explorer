@@ -15,10 +15,10 @@ export const RepoItem = ({
   name,
   stargazersCount,
   url,
-  committedDate,
+  lastPushedAt,
 }: RepoItemProps) => {
-  const formattedDate = committedDate
-    ? new Date(committedDate).toLocaleDateString('en-US', options)
+  const formattedDate = lastPushedAt
+    ? new Date(lastPushedAt).toLocaleDateString('en-US', options)
     : undefined;
 
   const urlObj = new URL(url);
@@ -36,7 +36,7 @@ export const RepoItem = ({
         {name}
       </a>
       <div className={styles.descriptionBlock}>
-        {formattedDate && <p>Last commit - {formattedDate}</p>}
+        {formattedDate && <p>Last push - {formattedDate}</p>}
         <p>Stars at the repository - {stargazersCount}</p>
       </div>
       <Link

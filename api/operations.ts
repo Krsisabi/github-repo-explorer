@@ -10,8 +10,19 @@
 // These mirror src/services/queries.graphql.ts, which stays the client's source
 // for generated types. A CI check that diffs the two is the obvious next step;
 // until then a drift shows up as a field the client maps to undefined.
+//
+// The list deliberately reads `pushedAt` rather than walking
+// `defaultBranchRef -> target -> committedDate`. Both answer "when was this
+// touched", but the walk resolves a commit per repository: measured against the
+// live API it added ~3.7s to a hundred results (8.7s against 5.0s), which is
+// what used to push the search past the proxy's deadline and return a 502.
 
 const LIST_FIELDS = `
+      repositoryCount
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       edges {
         node {
           ... on Repository {
@@ -19,27 +30,21 @@ const LIST_FIELDS = `
             name
             url
             stargazerCount
-            defaultBranchRef {
-              target {
-                ... on Commit {
-                  committedDate
-                }
-              }
-            }
+            pushedAt
           }
         }
       }`;
 
 export const PERSISTED_OPERATIONS = {
   GetRepos: `
-    query GetRepos($query: String!, $first: Int!) {
-      search(query: $query, type: REPOSITORY, first: $first) {${LIST_FIELDS}
+    query GetRepos($query: String!, $first: Int!, $after: String) {
+      search(query: $query, type: REPOSITORY, first: $first, after: $after) {${LIST_FIELDS}
       }
     }
   `,
   SearchRepo: `
-    query SearchRepo($name: String!, $first: Int!) {
-      search(query: $name, type: REPOSITORY, first: $first) {${LIST_FIELDS}
+    query SearchRepo($name: String!, $first: Int!, $after: String) {
+      search(query: $name, type: REPOSITORY, first: $first, after: $after) {${LIST_FIELDS}
       }
     }
   `,
@@ -88,6 +93,16 @@ const readPageSize = (value: unknown) =>
     ? Math.min(value, MAX_PAGE_SIZE)
     : MAX_PAGE_SIZE;
 
+// A cursor is opaque to us as well - it only ever comes back from a previous
+// response and goes straight into the next one. Nothing to validate beyond
+// "a string of sane length"; `null` means "start from the beginning".
+const readCursor = (value: unknown) =>
+  typeof value === 'string' &&
+  value.length > 0 &&
+  value.length <= MAX_STRING_LENGTH
+    ? value
+    : null;
+
 type Variables = Record<string, unknown>;
 
 export const buildVariables = (
@@ -102,7 +117,11 @@ export const buildVariables = (
     const term = readString(input[key]);
     if (!term) return null;
 
-    return { [key]: term, first: readPageSize(input.first) };
+    return {
+      [key]: term,
+      first: readPageSize(input.first),
+      after: readCursor(input.after),
+    };
   }
 
   const owner = readString(input.owner);

@@ -17,6 +17,17 @@
   }
 }
 
+.summary {
+  margin-top: 1rem;
+  color: var(--gray-100);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+
+  .note {
+    color: var(--gray-200);
+  }
+}
+
 .parentMessage {
   display: flex;
   justify-content: center;

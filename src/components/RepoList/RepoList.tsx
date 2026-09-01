@@ -1,8 +1,16 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useSearchParams } from 'react-router-dom';
 
-import { useLazyGetReposQuery, useLazySearchRepoQuery } from '~/services/api';
-import { useLocalStorage } from '~/hooks/useLocalStorage';
+import { useGetReposQuery, useSearchRepoQuery } from '~/services/api';
+import { useCursorTrail } from '~/hooks/useCursorTrail';
+import {
+  PAGE_KEY,
+  PAGE_SIZE,
+  PAGES_PER_WINDOW,
+  SEARCH_CEILING,
+  lastReachablePage,
+} from '~/constants/pagination';
 
 import { RepoItem } from '../RepoItem';
 import { Pagination } from '../Pagination';
@@ -10,47 +18,110 @@ import { SEARCH_KEY } from '../SearchInput';
 
 import styles from './RepoList.module.scss';
 
-const PageSize = 10;
+const count = (value: number) => value.toLocaleString('en-US');
+
+const readPage = (raw: string | null) => {
+  const page = Number(raw);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+};
 
 export const RepoList = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQueryParam = searchParams.get(SEARCH_KEY);
+  const requestedPage = readPage(searchParams.get(PAGE_KEY));
 
-  const [triggerGetRepos, resultGetRepos] = useLazyGetReposQuery();
-  const [triggerSearchRepo, resultSearchRepo] = useLazySearchRepoQuery();
-  const { data, isFetching, error } = searchQueryParam
-    ? resultSearchRepo
-    : resultGetRepos;
+  const { trail, learn } = useCursorTrail(searchQueryParam ?? '');
 
-  const [currentPage, setCurrentPage] = useLocalStorage('currentPage', 1);
+  // Which window of results the requested page falls in, and the deepest one we
+  // hold a cursor for. While the second lags behind the first we are walking.
+  const requestedWindow = Math.floor((requestedPage - 1) / PAGES_PER_WINDOW);
+  const windowIndex = Math.min(requestedWindow, trail.length - 1);
+  const after = trail[windowIndex];
 
-  // Reloading straight onto ?search=... keeps the stored page number; every
-  // later change of the query is a new search and starts from page one.
-  const isFirstRender = useRef(true);
+  const reposResult = useGetReposQuery(
+    searchQueryParam ? skipToken : { after }
+  );
+  const searchResult = useSearchRepoQuery(
+    searchQueryParam ? { name: searchQueryParam, after } : skipToken
+  );
 
-  useLayoutEffect(() => {
-    if (!isFirstRender.current || !searchQueryParam) setCurrentPage(1);
-    isFirstRender.current = false;
+  // `currentData`, not `data`: RTK Query keeps `data` from the previous
+  // arguments while the next request is in flight, so during a walk it still
+  // holds the window we just left. Learning a cursor from it would file window
+  // N's starting point under window N+2 and quietly show the wrong page.
+  const {
+    currentData: loadedWindow,
+    isFetching,
+    error,
+  } = searchQueryParam ? searchResult : reposResult;
 
-    if (!searchQueryParam) {
-      triggerGetRepos({});
-      return;
-    }
+  // GitHub reports how many repositories matched, but hands out only the first
+  // thousand of them, so the last page anyone can reach is capped.
+  const totalPages = loadedWindow
+    ? lastReachablePage(loadedWindow.totalCount)
+    : requestedPage;
+  const page = Math.min(requestedPage, totalPages);
+  const targetWindow = Math.floor((page - 1) / PAGES_PER_WINDOW);
+  const isWalking = windowIndex < targetWindow;
 
-    triggerSearchRepo({
-      name: searchQueryParam,
+  // Every window we load tells us where the next one begins. Learning that
+  // cursor lengthens the trail, which moves `windowIndex` a step closer and
+  // starts the next request - the walk is driven by rendering, not by a loop.
+  useEffect(() => {
+    if (!loadedWindow || !isWalking) return;
+    if (!loadedWindow.hasNextPage || !loadedWindow.endCursor) return;
+
+    learn(windowIndex + 1, loadedWindow.endCursor);
+  }, [loadedWindow, isWalking, windowIndex, learn]);
+
+  // A page number past the end - a stale link, a hand-typed URL - is corrected
+  // in the address bar too, so a reload does not repeat the walk to nowhere.
+  useEffect(() => {
+    if (page === requestedPage) return;
+
+    setSearchParams(
+      (params) => {
+        params.set(PAGE_KEY, String(page));
+        return params;
+      },
+      { replace: true }
+    );
+  }, [page, requestedPage, setSearchParams]);
+
+  const offset = ((page - 1) % PAGES_PER_WINDOW) * PAGE_SIZE;
+  const pageItems = useMemo(
+    () =>
+      loadedWindow && !isWalking
+        ? loadedWindow.items.slice(offset, offset + PAGE_SIZE)
+        : null,
+    [loadedWindow, isWalking, offset]
+  );
+
+  const goToPage = (next: number) => {
+    setSearchParams((params) => {
+      params.set(PAGE_KEY, String(next));
+      return params;
     });
-  }, [searchQueryParam, setCurrentPage, triggerGetRepos, triggerSearchRepo]);
+  };
 
-  const currentTableData = useMemo(() => {
-    const firstPageIndex = (currentPage - 1) * PageSize;
-    const lastPageIndex = firstPageIndex + PageSize;
-    return data?.slice(firstPageIndex, lastPageIndex);
-  }, [currentPage, data]);
+  if (error) {
+    // The raw GraphQL error is a wall of JSON, sometimes an upstream nginx
+    // page. Useful in the console, not on screen.
+    return (
+      <div className={styles.parentMessage}>
+        <div className={styles.message}>
+          <span>Could not load repositories</span>
+          <p className={styles.error}>
+            GitHub is not answering right now. Try again in a moment.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const typedError = error as Error | undefined;
-
-  if (isFetching) {
+  // `isWalking` counts as loading: the window on screen is not the one asked
+  // for, so showing its contents would be showing the wrong page.
+  if (isFetching || isWalking || !loadedWindow || !pageItems) {
     return (
       <div className={styles.parentMessage}>
         <p className={styles.message}>Searching...</p>
@@ -58,44 +129,45 @@ export const RepoList = () => {
     );
   }
 
-  if (data?.length === 0) {
+  if (loadedWindow.totalCount === 0) {
     return (
       <div className={styles.parentMessage}>
-        <p className={styles.message}>Nothing</p>
+        <p className={styles.message}>Nothing found</p>
       </div>
     );
   }
 
-  if (typedError?.message) {
-    // The raw GraphQL error is a wall of JSON, sometimes an upstream nginx
-    // page. Useful in the console, not on screen.
-    return (
-      <div className={styles.parentMessage}>
-        <div className={styles.message}>
-          <span>Could not load repositories</span>
-          <h3 className={styles.error}>
-            GitHub is not answering right now. Try again in a moment.
-          </h3>
-        </div>
-      </div>
-    );
-  }
+  const reachable = Math.min(loadedWindow.totalCount, SEARCH_CEILING);
+  const from = (page - 1) * PAGE_SIZE + 1;
+  const to = from + pageItems.length - 1;
 
   return (
     <>
+      <p className={styles.summary}>
+        {count(loadedWindow.totalCount)} repositories found &middot; showing{' '}
+        {count(from)}
+        &ndash;{count(to)}
+        {loadedWindow.totalCount > SEARCH_CEILING && (
+          <span className={styles.note}>
+            {' '}
+            of the first {count(SEARCH_CEILING)}, which is as deep as GitHub
+            search goes
+          </span>
+        )}
+      </p>
+
       <div className={styles.repoList} data-testid="repo-list">
-        {currentTableData?.map((el) => (
+        {pageItems.map((el) => (
           <RepoItem key={el.id} {...el} />
         ))}
       </div>
-      {data && (
-        <Pagination
-          currentPage={currentPage}
-          totalCount={data.length}
-          pageSize={PageSize}
-          onPageChange={setCurrentPage}
-        />
-      )}
+
+      <Pagination
+        currentPage={page}
+        totalCount={reachable}
+        pageSize={PAGE_SIZE}
+        onPageChange={goToPage}
+      />
     </>
   );
 };
