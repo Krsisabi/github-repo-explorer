@@ -28,6 +28,28 @@ const GITHUB_PROXY_URL =
 // What the landing page shows before the user searches for anything.
 const DEFAULT_QUERY = 'stars:>50000 sort:stars-desc';
 
+// A missing repository is not an outage, and the two need different wording:
+// "try again" is useless advice for a URL that will never resolve. GitHub
+// reports both as an errors array, so the difference is read there rather than
+// guessed from the error's shape.
+export type RepoErrorKind = 'not-found' | 'unavailable';
+
+type GraphQLErrorMeta = {
+  response?: { errors?: { type?: string; message?: string }[] };
+};
+
+const readErrorKind = (meta: unknown): RepoErrorKind => {
+  const errors = (meta as GraphQLErrorMeta | undefined)?.response?.errors;
+
+  const missing = errors?.some(
+    (error) =>
+      error?.type === 'NOT_FOUND' ||
+      error?.message?.includes('Could not resolve to a Repository')
+  );
+
+  return missing ? 'not-found' : 'unavailable';
+};
+
 export const api = createApi({
   baseQuery: graphqlRequestBaseQuery({ url: GITHUB_PROXY_URL }),
   reducerPath: 'githubApi',
@@ -66,6 +88,7 @@ export const api = createApi({
         },
       }),
       transformResponse: (res: GetRepoQuery) => mapFetchRepoResponseToRepo(res),
+      transformErrorResponse: (_error, meta) => readErrorKind(meta),
     }),
   }),
 });

@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
 import clsx from 'clsx';
 
 import { usePagination, DOTS } from '~/hooks/usePagination';
@@ -30,78 +28,89 @@ export const Pagination = (props: PaginationProps) => {
     return null;
   }
 
-  const onNext = () => {
-    onPageChange(currentPage + 1);
-  };
-
-  const onPrevious = () => {
-    onPageChange(currentPage - 1);
-  };
-
   const onTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const goTo = (page: number) => {
+    onTop();
+    onPageChange(page);
+  };
+
   const lastPage = paginationRange.at(-1);
 
+  // Every control is a real <button>: keyboard focus, Enter and Space, and the
+  // disabled state come from the element instead of being drawn with CSS. The
+  // previous version put onClick on <li>, which meant the list could only be
+  // used with a mouse - `pointer-events: none` is invisible to a screen reader.
   return (
-    <ul className={styles.paginationContainer} data-testid="pagination-block">
-      <li
-        className={clsx(styles.paginationItem, {
-          [styles.disabled]: currentPage === 1,
-        })}
-        onClick={() => {
-          onTop();
-          onPrevious();
-        }}
-      >
-        <div
-          className={`${styles.arrow} ${styles.left}`}
-          data-testid="left-arrow"
-        />
-      </li>
-      {paginationRange?.map((pageNumber, i) => {
-        if (pageNumber === DOTS) {
+    <nav aria-label="Pagination">
+      <ul className={styles.paginationContainer} data-testid="pagination-block">
+        <li>
+          <button
+            type="button"
+            className={styles.paginationItem}
+            onClick={() => goTo(currentPage - 1)}
+            disabled={currentPage === 1}
+            aria-label="Previous page"
+          >
+            <span
+              className={`${styles.arrow} ${styles.left}`}
+              data-testid="left-arrow"
+            />
+          </button>
+        </li>
+
+        {paginationRange.map((pageNumber, i) => {
+          if (pageNumber === DOTS) {
+            return (
+              <li
+                className={`${styles.paginationItem} ${styles.dots}`}
+                key={`dots-${i}`}
+                aria-hidden="true"
+              >
+                &#8230;
+              </li>
+            );
+          }
+
+          const page = +pageNumber;
+          const isCurrent = page === currentPage;
+
           return (
-            <li
-              className={`${styles.paginationItem} ${styles.dots}`}
-              key={`dots-${i}`}
-            >
-              &#8230;
+            <li key={pageNumber}>
+              <button
+                type="button"
+                className={clsx(styles.paginationItem, {
+                  [styles.selected]: isCurrent,
+                })}
+                onClick={() => goTo(page)}
+                // Announces the current page to assistive technology; the
+                // `selected` class only makes it visible.
+                aria-current={isCurrent ? 'page' : undefined}
+                aria-label={`Page ${page}`}
+              >
+                {pageNumber}
+              </button>
             </li>
           );
-        }
-
-        return (
-          <li
-            className={clsx(styles.paginationItem, {
-              [styles.selected]: +pageNumber === currentPage,
-            })}
-            onClick={() => {
-              onTop();
-              onPageChange(+pageNumber);
-            }}
-            key={pageNumber}
-          >
-            {pageNumber}
-          </li>
-        );
-      })}
-      <li
-        className={clsx(styles.paginationItem, {
-          [styles.disabled]: currentPage === lastPage,
         })}
-        onClick={() => {
-          onTop();
-          onNext();
-        }}
-        key="next"
-      >
-        <div
-          className={`${styles.arrow} ${styles.right}`}
-          data-testid="right-arrow"
-        />
-      </li>
-    </ul>
+
+        <li>
+          <button
+            type="button"
+            className={styles.paginationItem}
+            onClick={() => goTo(currentPage + 1)}
+            disabled={currentPage === lastPage}
+            aria-label="Next page"
+          >
+            <span
+              className={`${styles.arrow} ${styles.right}`}
+              data-testid="right-arrow"
+            />
+          </button>
+        </li>
+      </ul>
+    </nav>
   );
 };

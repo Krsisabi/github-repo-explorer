@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { LanguagesList } from '~/components/LanguagesList';
 import { RepoTitle } from '~/components/RepoTitle';
@@ -34,14 +34,28 @@ export const Repo = () => {
   }
 
   if (error) {
+    // `<h3>` used to sit inside a `<p>`, which browsers are free to reflow into
+    // something else entirely.
     return (
       <div className={styles.parentMessage}>
-        <p className={styles.message}>
-          <span>Не удалось загрузить репозиторий</span>
-          <h3 className={styles.error}>
-            GitHub сейчас не отвечает. Попробуйте обновить страницу.
-          </h3>
-        </p>
+        <div className={styles.message}>
+          {error === 'not-found' ? (
+            <>
+              <span>Repository not found</span>
+              <h3 className={styles.error}>
+                There is no <b>{`${owner}/${reponame}`}</b> on GitHub. Check the
+                address, or <Link to="/">search from the start</Link>.
+              </h3>
+            </>
+          ) : (
+            <>
+              <span>Could not load the repository</span>
+              <h3 className={styles.error}>
+                GitHub is not answering right now. Try again in a moment.
+              </h3>
+            </>
+          )}
+        </div>
       </div>
     );
   }

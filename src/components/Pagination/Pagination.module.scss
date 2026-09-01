@@ -23,6 +23,11 @@
     padding: 1rem;
     border-radius: 2rem;
 
+    // The controls are buttons now, so the browser defaults have to go before
+    // the shared look applies.
+    border: none;
+    font: inherit;
+
     @media (min-width: 480px) {
       height: 2.5rem;
       min-width: 2.5rem;
@@ -34,9 +39,14 @@
       font-size: 1rem;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
       background-color: var(--gray-200);
       cursor: pointer;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--white);
+      outline-offset: 2px;
     }
 
     &.selected {
@@ -45,11 +55,8 @@
 
     &.dots {
       line-height: 32px;
-
-      &:hover {
-        background-color: var(--gray-400);
-        cursor: default;
-      }
+      background-color: var(--gray-400);
+      cursor: default;
     }
 
     .arrow {
@@ -71,13 +78,11 @@
       }
     }
 
-    &.disabled {
-      pointer-events: none;
-
-      &:hover {
-        background-color: transparent;
-        cursor: default;
-      }
+    // Native `disabled` replaces the old `pointer-events: none` trick, which
+    // hid the button from the mouse but told assistive technology nothing.
+    &:disabled {
+      background-color: transparent;
+      cursor: default;
 
       .arrow::before {
         opacity: 0.2;

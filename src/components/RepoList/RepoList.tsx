@@ -72,9 +72,9 @@ export const RepoList = () => {
     return (
       <div className={styles.parentMessage}>
         <div className={styles.message}>
-          <span>Не удалось загрузить репозитории</span>
+          <span>Could not load repositories</span>
           <h3 className={styles.error}>
-            GitHub сейчас не отвечает. Попробуйте обновить страницу.
+            GitHub is not answering right now. Try again in a moment.
           </h3>
         </div>
       </div>
