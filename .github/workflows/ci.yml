@@ -25,6 +25,14 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      # Keyed on the lock file, because that is what decides which binary npm
+      # will ask for. Without it every run downloads ~200 MB again.
+      - name: Cache the Cypress binary
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install dependencies
         run: npm ci
 
@@ -41,3 +49,23 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Against the built bundle, the same one that ships. Every call to GitHub
+      # is stubbed in the specs, so this needs no token and no serverless
+      # runtime - which is the whole reason the suite can run here at all.
+      - name: End-to-end tests
+        run: |
+          npm run preview &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:4173 > /dev/null && break
+            sleep 1
+          done
+          npx cypress run
+
+      - name: Keep the screenshots of whatever failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
