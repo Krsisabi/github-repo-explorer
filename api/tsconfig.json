@@ -1,0 +1,26 @@
+// The serverless function, checked as what it is: Node, not a browser.
+//
+// The application's tsconfig hands out both vocabularies at once, so a `window`
+// here or a `process` there compiles and only fails once it runs. Splitting
+// them makes the compiler hold the boundary this project is built around - the
+// token lives on the server and the client never sees it.
+//
+// `NodeNext` resolution is the other half: it is how Node actually resolves at
+// run time, so the `.js` extension on a relative import is required here rather
+// than remembered.
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["**/*.ts"]
+}

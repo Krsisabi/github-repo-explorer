@@ -25,6 +25,7 @@ export default tseslint.config(
         // parsed for the type-aware rules.
         project: [
           './tsconfig.json',
+          './api/tsconfig.json',
           './tsconfig.node.json',
           './cypress/tsconfig.json',
         ],

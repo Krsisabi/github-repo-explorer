@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // The `.js` extension is required: the package is ESM, so Node resolves this
-// specifier at runtime, where extensionless paths do not exist. Vite and tsc
-// both accept it without one, which is why only a deployed function catches it.
+// specifier itself at run time, where extensionless paths do not exist. The
+// project in api/tsconfig.json resolves the same way, so dropping it fails the
+// type check rather than the deployed function.
 import {
   PERSISTED_OPERATIONS,
   buildVariables,

@@ -14,13 +14,17 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite-plugin-svgr/client", "node"],
+    // The browser vocabulary only. Node types are not listed, so `process` or
+    // `Buffer` in a component is a compile error rather than a blank page: the
+    // serverless function has its own project in api/tsconfig.json.
+    "types": ["vite-plugin-svgr/client"],
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  // The build tooling lives in tsconfig.node.json, checked separately by
-  // `npm run typecheck`. It cannot be a project reference from here: `tsc
-  // --noEmit` does not follow references, so those files would go unchecked.
-  "include": ["src", "api"]
+  // The function, the build tooling and the specs each have a project of their
+  // own, all of them run by `npm run typecheck`. None can be a project
+  // reference from here: `tsc --noEmit` does not follow references, so those
+  // files would go unchecked.
+  "include": ["src"]
 }
