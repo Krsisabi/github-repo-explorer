@@ -66,6 +66,7 @@ export const SearchInput = () => {
   return (
     <div className={styles.search}>
       <label htmlFor="search" className={styles.label}>
+        <span className={styles.labelText}>Search GitHub repositories</span>
         <div className={styles.searchIcon}>
           <SearchIcon />
         </div>

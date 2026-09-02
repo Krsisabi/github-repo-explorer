@@ -21,6 +21,21 @@
     cursor: pointer;
   }
 
+  // The label reads as a magnifier to anyone looking at it, and as nothing at
+  // all to anyone listening. This is the text for the second case: clipped to
+  // one pixel rather than hidden, because `display: none` also leaves the
+  // field unnamed.
+  .labelText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .inputSearch {
     padding: 0 10px;
     height: 20px;
@@ -36,8 +51,11 @@
       color: var(--gray);
     }
 
-    &:focus {
-      outline: none;
+    // Not `outline: none`: keyboard focus has to stay visible somewhere, and
+    // the field is the first thing Tab reaches.
+    &:focus-visible {
+      outline: 2px solid var(--main-color);
+      outline-offset: 2px;
     }
 
     @media (min-width: 480px) {
