@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useGetReposQuery, useSearchRepoQuery } from '~/services/api';
 import { useCursorTrail } from '~/hooks/useCursorTrail';
+import { formatCount } from '~/lib/format';
 import {
   PAGE_KEY,
   PAGE_SIZE,
@@ -17,8 +18,6 @@ import { Pagination } from '../Pagination';
 import { SEARCH_KEY } from '../SearchInput';
 
 import styles from './RepoList.module.scss';
-
-const count = (value: number) => value.toLocaleString('en-US');
 
 const readPage = (raw: string | null) => {
   const page = Number(raw);
@@ -140,14 +139,14 @@ export const RepoList = () => {
   return (
     <>
       <p className={styles.summary}>
-        {count(loadedWindow.totalCount)} repositories found &middot; showing{' '}
-        {count(from)}
-        &ndash;{count(to)}
+        {formatCount(loadedWindow.totalCount)} repositories found &middot;
+        showing {formatCount(from)}
+        &ndash;{formatCount(to)}
         {loadedWindow.totalCount > SEARCH_CEILING && (
           <span className={styles.note}>
             {' '}
-            of the first {count(SEARCH_CEILING)}, which is as deep as GitHub
-            search goes
+            of the first {formatCount(SEARCH_CEILING)}, which is as deep as
+            GitHub search goes
           </span>
         )}
       </p>

@@ -7,9 +7,9 @@ interface LanguagesListProps {
 export const LanguagesList = ({ languages }: LanguagesListProps) => (
   <div className={styles.languagesList}>
     <h3>Languages used</h3>
-    <ul className={styles.languagesList}>
-      {languages?.map((lang, index) => (
-        <li key={index}>{lang}</li>
+    <ul>
+      {languages.map((lang) => (
+        <li key={lang}>{lang}</li>
       ))}
     </ul>
   </div>

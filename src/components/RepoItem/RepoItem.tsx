@@ -2,14 +2,9 @@ import { Link, generatePath } from 'react-router-dom';
 
 import { RepoItem as RepoItemProps } from '~/services/types';
 import { REPO_PAGE_ROUTE } from '~/constants/routes';
+import { formatCount, formatDate } from '~/lib/format';
 
 import styles from './RepoItem.module.scss';
-
-const options = {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-} as Intl.DateTimeFormatOptions;
 
 export const RepoItem = ({
   name,
@@ -17,9 +12,7 @@ export const RepoItem = ({
   url,
   lastPushedAt,
 }: RepoItemProps) => {
-  const formattedDate = lastPushedAt
-    ? new Date(lastPushedAt).toLocaleDateString('en-US', options)
-    : undefined;
+  const formattedDate = lastPushedAt ? formatDate(lastPushedAt) : undefined;
 
   const urlObj = new URL(url);
   const username = urlObj.pathname.split('/')[1];
@@ -37,7 +30,7 @@ export const RepoItem = ({
       </a>
       <div className={styles.descriptionBlock}>
         {formattedDate && <p>Last push - {formattedDate}</p>}
-        <p>Stars at the repository - {stargazersCount}</p>
+        <p>Stars at the repository - {formatCount(stargazersCount)}</p>
       </div>
       <Link
         to={generatePath(REPO_PAGE_ROUTE, {
@@ -45,6 +38,9 @@ export const RepoItem = ({
           reponame: name,
         })}
         className={styles.link}
+        // "More..." on its own tells a screen reader nothing about which of
+        // the ten rows it belongs to.
+        aria-label={`More about ${name}`}
       >
         More...
       </Link>

@@ -11,6 +11,7 @@ export const mapFetchRepoResponseToRepo = (res: GetRepoQuery): Repo => {
   return {
     stargazerCount: repository?.stargazerCount,
     login: repository?.owner.login,
+    ownerUrl: repository?.owner.url,
     avatar: repository?.owner.avatarUrl,
     name: repository?.name,
     description: repository?.description,

@@ -7,7 +7,13 @@ import App from './App';
 import './styles/index.css';
 import store from './store/store';
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+const container = document.getElementById('root');
+
+if (!container) {
+  throw new Error('index.html is missing the #root element');
+}
+
+ReactDOM.createRoot(container).render(
   <React.StrictMode>
     <BrowserRouter>
       <Provider store={store}>

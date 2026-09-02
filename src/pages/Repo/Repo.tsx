@@ -20,6 +20,7 @@ export const Repo = () => {
     description,
     languages,
     login,
+    ownerUrl,
     name,
     updatedAt,
     url,
@@ -60,10 +61,11 @@ export const Repo = () => {
 
   return (
     <div className={styles.repo}>
-      <img src={avatar} alt={login} className={styles.avatar} />
+      {avatar && <img src={avatar} alt="" className={styles.avatar} />}
       <RepoTitle
         updatedAt={updatedAt}
         login={login}
+        ownerUrl={ownerUrl}
         name={name}
         stargazerCount={stargazerCount}
         url={url}

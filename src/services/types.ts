@@ -10,6 +10,7 @@ export type Repo = {
   stargazerCount: number | undefined | null;
   languages?: string[];
   login?: string;
+  ownerUrl?: string;
   name?: string;
   description?: string | null;
   avatar?: string;
