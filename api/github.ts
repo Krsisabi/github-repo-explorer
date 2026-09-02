@@ -12,21 +12,13 @@ import {
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 
 const UPSTREAM_TIMEOUT_MS = 8000;
-const MAX_BODY_LENGTH = 8000;
 
-// The document the browser sends is never forwarded. It is read for one thing
-// only - which of the three persisted operations to run - and then dropped, so
-// a caller who writes their own query and labels it `GetRepos` gets the real
-// `GetRepos` back rather than their own request executed with our token.
-const readOperationName = (body: Record<string, unknown>) => {
-  if (typeof body.operationName === 'string') return body.operationName;
-
-  const document = body.query;
-  if (typeof document !== 'string') return null;
-
-  const match = document.match(/\bquery\s+(\w+)/);
-  return match ? match[1] : null;
-};
+// A request names the operation it wants and nothing else is read from it. The
+// document the client sends alongside is ignored, so a caller who writes their
+// own query and labels it `GetRepos` gets the real `GetRepos` back rather than
+// their own request executed with our token.
+const readOperationName = (body: Record<string, unknown>) =>
+  typeof body.operationName === 'string' ? body.operationName : null;
 
 const wait = (ms: number) =>
   new Promise((resolve) => {
@@ -92,17 +84,12 @@ export default async function handler(
       .json({ error: 'Server is missing its GitHub token' });
   }
 
+  // The platform parses a JSON body itself and hands over an object; a string
+  // arrives only when the client sent some other content type.
   let body: unknown;
   try {
     const raw = request.body;
-    if (typeof raw === 'string') {
-      if (raw.length > MAX_BODY_LENGTH) {
-        return response.status(413).json({ error: 'Body is too large' });
-      }
-      body = JSON.parse(raw);
-    } else {
-      body = raw;
-    }
+    body = typeof raw === 'string' ? JSON.parse(raw) : raw;
   } catch {
     return response.status(400).json({ error: 'Body must be valid JSON' });
   }
