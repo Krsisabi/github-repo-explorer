@@ -20,7 +20,14 @@ export default tseslint.config(
       ecmaVersion: 'latest',
       globals: globals.browser,
       parserOptions: {
-        project: './tsconfig.json',
+        // Every project, not just the application one: the specs and the build
+        // tooling are TypeScript too, and a file outside all of them cannot be
+        // parsed for the type-aware rules.
+        project: [
+          './tsconfig.json',
+          './tsconfig.node.json',
+          './cypress/tsconfig.json',
+        ],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -55,12 +62,31 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/**/*[sS]lice.ts'],
-    rules: {
-      'no-param-reassign': [
-        'error',
-        { props: true, ignorePropertyModificationsFor: ['state'] },
-      ],
+    // Everything outside the browser bundle: the serverless function, the
+    // specs, the build tooling and this file.
+    files: [
+      'api/**/*.ts',
+      'cypress/**/*.ts',
+      'scripts/**/*.mjs',
+      '*.config.{ts,js,cjs}',
+      'eslint.config.js',
+    ],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    // Prettier's config is the one CommonJS file left, so it needs `module`.
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['cypress/**/*.ts'],
+    languageOptions: {
+      globals: { ...globals.node, cy: 'readonly', Cypress: 'readonly' },
     },
   },
   prettierConfig

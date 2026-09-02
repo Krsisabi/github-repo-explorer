@@ -78,7 +78,9 @@ const repositoryFound = (owner: string, name: string) => ({
       updatedAt: '2026-02-03T04:05:06Z',
       url: `https://github.com/${owner}/${name}`,
       description: REPO_DESCRIPTION,
-      languages: { nodes: REPO_LANGUAGES.map((language) => ({ name: language })) },
+      languages: {
+        nodes: REPO_LANGUAGES.map((language) => ({ name: language })),
+      },
       owner: {
         login: owner,
         url: `https://github.com/${owner}`,
@@ -128,7 +130,10 @@ export const stubGitHub = ({
     };
     const variables = body.variables ?? {};
 
-    if (body.operationName === 'GetRepos' || body.operationName === 'SearchRepo') {
+    if (
+      body.operationName === 'GetRepos' ||
+      body.operationName === 'SearchRepo'
+    ) {
       req.reply(searchWindow(windowIndexFor(variables.after), totalCount));
       return;
     }
@@ -138,7 +143,10 @@ export const stubGitHub = ({
       const name = String(variables.name ?? '');
 
       if (repo === 'unavailable') {
-        req.reply({ statusCode: 502, body: { error: 'GitHub is unavailable' } });
+        req.reply({
+          statusCode: 502,
+          body: { error: 'GitHub is unavailable' },
+        });
         return;
       }
 
