@@ -32,8 +32,6 @@ describe('Repository page', () => {
   });
 
   it('tells a repository that does not exist from a service that is down', () => {
-    // One message for both used to send anyone with a typo in the address off
-    // to refresh the page forever.
     stubGitHub({ repo: 'missing' });
     cy.visit('/octocat/no-such-repository');
 

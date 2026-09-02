@@ -11,7 +11,7 @@ export const WINDOW_SIZE = 100;
 /**
  * How deep `search` lets anyone page. Past this GitHub reports
  * `hasNextPage: false` and returns nothing, no matter how many repositories
- * matched - verified against the live API, not assumed.
+ * matched.
  */
 export const SEARCH_CEILING = 1000;
 

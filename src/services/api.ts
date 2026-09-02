@@ -55,7 +55,7 @@ const readErrorKind = (meta: unknown): RepoErrorKind => {
 // Walking forward to a distant page costs one request per window, so the
 // windows behind you are worth keeping: paging back should not pay again for
 // what was already fetched. The default of a minute is shorter than the walk
-// itself, which made "go back to page 1" refetch window one.
+// itself.
 const WINDOW_CACHE_SECONDS = 300;
 
 export const api = createApi({

@@ -8,14 +8,7 @@
 // sees one of the three documents below.
 //
 // These mirror src/services/queries.graphql.ts, which stays the client's source
-// for generated types. A CI check that diffs the two is the obvious next step;
-// until then a drift shows up as a field the client maps to undefined.
-//
-// The list deliberately reads `pushedAt` rather than walking
-// `defaultBranchRef -> target -> committedDate`. Both answer "when was this
-// touched", but the walk resolves a commit per repository: measured against the
-// live API it added ~3.7s to a hundred results (8.7s against 5.0s), which is
-// what used to push the search past the proxy's deadline and return a 502.
+// for generated types.
 
 const LIST_FIELDS = `
       repositoryCount

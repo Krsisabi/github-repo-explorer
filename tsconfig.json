@@ -20,7 +20,7 @@
     }
   },
   // The build tooling lives in tsconfig.node.json, checked separately by
-  // `npm run typecheck`. It used to be wired up as a project reference, which
-  // `tsc --noEmit` silently ignores - so those files went unchecked.
+  // `npm run typecheck`. It cannot be a project reference from here: `tsc
+  // --noEmit` does not follow references, so those files would go unchecked.
   "include": ["src", "api"]
 }

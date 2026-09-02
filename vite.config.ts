@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [svgr(), react()],
   resolve: {
     // Picks up the `~/*` alias straight from tsconfig; Vite resolves these
-    // natively now, so no separate plugin is needed.
+    // natively, so no separate plugin is needed.
     tsconfigPaths: true,
     alias: {
       '~styles': path.resolve(import.meta.dirname, 'src/styles'),

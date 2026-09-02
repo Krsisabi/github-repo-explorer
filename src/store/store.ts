@@ -6,8 +6,7 @@ import { api } from '~/services/api';
 // There is no hand-written slice, because there is no state left that the URL
 // does not already hold - the search term and the page number travel in the
 // address, which survives a reload and a shared link. A slice mirroring them
-// would be a second copy to keep in sync, and the first attempt at one is
-// exactly what used to wipe the page number on every click.
+// would be a second copy to keep in sync.
 const store = configureStore({
   reducer: {
     [api.reducerPath]: api.reducer,

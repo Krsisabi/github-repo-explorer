@@ -92,9 +92,6 @@ export default async function handler(
       .json({ error: 'Server is missing its GitHub token' });
   }
 
-  // JSON.parse throws rather than returning a value, so without the catch a
-  // single malformed request takes the whole function down with a 500 and the
-  // check below never runs.
   let body: unknown;
   try {
     const raw = request.body;

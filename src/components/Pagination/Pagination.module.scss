@@ -23,8 +23,8 @@
     padding: 1rem;
     border-radius: 2rem;
 
-    // The controls are buttons now, so the browser defaults have to go before
-    // the shared look applies.
+    // The controls are buttons, so the browser defaults have to go before the
+    // shared look applies.
     border: none;
     font: inherit;
 
@@ -78,8 +78,8 @@
       }
     }
 
-    // Native `disabled` replaces the old `pointer-events: none` trick, which
-    // hid the button from the mouse but told assistive technology nothing.
+    // Native `disabled` rather than `pointer-events: none`: the latter switches
+    // a control off for a mouse and for nothing else.
     &:disabled {
       background-color: transparent;
       cursor: default;

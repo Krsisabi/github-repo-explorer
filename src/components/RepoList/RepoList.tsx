@@ -45,10 +45,6 @@ export const RepoList = () => {
     searchQueryParam ? { name: searchQueryParam, after } : skipToken
   );
 
-  // `currentData`, not `data`: RTK Query keeps `data` from the previous
-  // arguments while the next request is in flight, so during a walk it still
-  // holds the window we just left. Learning a cursor from it would file window
-  // N's starting point under window N+2 and quietly show the wrong page.
   const {
     currentData: loadedWindow,
     isFetching,

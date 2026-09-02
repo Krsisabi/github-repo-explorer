@@ -38,8 +38,6 @@ describe('Search', () => {
   });
 
   it('clears the search when the logo is clicked', () => {
-    // The second face of the page-number bug: the same stale write put the old
-    // query straight back into the address, so the logo did nothing.
     stubGitHub();
     cy.visit('/');
     searchField().type('tetris');

@@ -1,8 +1,8 @@
 import { GetReposQuery } from '~/__generated__/graphql';
 
-// The shape of the list response is not written here by hand any more: codegen
-// derives it from the query text and GitHub's schema, so a field that moves in
-// the schema breaks the build instead of arriving as `undefined` at runtime.
+// The shape of the list response is not written here by hand: codegen derives
+// it from the query text and GitHub's schema, so a field that moves in the
+// schema breaks the build instead of arriving as `undefined` at runtime.
 // SearchRepo selects the same fields, so its response satisfies this too.
 export type RepoSearchConnection = GetReposQuery['search'];
 

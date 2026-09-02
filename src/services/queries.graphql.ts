@@ -1,8 +1,8 @@
 import { graphql } from '~/__generated__';
 
 // Both list queries hit `search`: the landing page is just a search with a
-// default filter. The old GetRepos read `viewer.repositories`, which returns
-// whatever account owns the token - meaningless once the token moved server-side.
+// default filter. Nothing here reads `viewer`, which would answer with whatever
+// account owns the token rather than with anything the visitor asked for.
 export const GET_REPOS = graphql(`
   query GetRepos($query: String!, $first: Int!, $after: String) {
     search(query: $query, type: REPOSITORY, first: $first, after: $after) {

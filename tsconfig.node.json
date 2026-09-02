@@ -1,7 +1,6 @@
 // The build tooling, which the app's tsconfig does not include: its `include`
-// is limited to `src` and `api`. These files used to be reachable only through
-// a `references` entry, and `tsc --noEmit` does not follow references, so they
-// were never checked at all. `npm run typecheck` now runs this project too.
+// is limited to `src` and `api`. `npm run typecheck` runs this project
+// directly, because `tsc --noEmit` does not follow project references.
 {
   "compilerOptions": {
     "target": "ESNext",

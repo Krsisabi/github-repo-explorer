@@ -34,8 +34,6 @@ export const Repo = () => {
   }
 
   if (error) {
-    // `<h3>` used to sit inside a `<p>`, which browsers are free to reflow into
-    // something else entirely.
     return (
       <div className={styles.parentMessage}>
         <div className={styles.message}>

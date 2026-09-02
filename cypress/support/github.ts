@@ -1,11 +1,7 @@
 /**
  * A stand-in for the proxy, so the suite tests this application rather than
- * GitHub's ranking of the day.
- *
- * The previous tests searched for "tetris" and asserted that `react-tetris`
- * came back second: true when they were written, false now, and never a
- * statement about any code in this repository. Everything here is generated, so
- * a failure means the app changed.
+ * GitHub's ranking of the day. Every result below is generated, so a failure
+ * means this code changed and not somebody else's repository.
  *
  * The stub answers on operation name and cursor, which is exactly what the real
  * proxy keys on - the client sends `operationName` alongside the document, and
@@ -118,9 +114,8 @@ export type StubOptions = {
 /**
  * Registers the stub and aliases it `@github`.
  *
- * Call before `cy.visit`. The old suite registered its intercept after the
- * visit, by which time the landing request had already gone, and then waited
- * ten seconds for a second one that never came.
+ * Call before `cy.visit`: an intercept registered afterwards misses the landing
+ * request, and `cy.wait` then sits out its timeout waiting for a second one.
  */
 export const stubGitHub = ({
   totalCount = 1234,

@@ -9,10 +9,6 @@ import {
 
 describe('Pagination', () => {
   it('keeps the page number after the query was typed by hand', () => {
-    // The bug this guards: typing raised a flag that let the URL writer run on
-    // every later navigation, and each run deleted the page number. Pressing 2
-    // went straight back to page 1. It only appeared after a keystroke, so
-    // paging on the landing page - where nobody types - looked fine.
     stubGitHub();
     cy.visit('/');
     listedRepos().should('have.length', 10);
@@ -83,12 +79,10 @@ describe('Pagination', () => {
 
   it('leaves paging to elements the browser already knows how to operate', () => {
     // Tab focus, Enter, Space and the disabled state belong to the button
-    // element; the application does not implement them and should not have to.
-    // Cypress cannot reproduce that default - a synthetic `{enter}` on a
-    // focused button fires no click - so what is asserted here is the thing
-    // that earns the behaviour. It is also the thing that regressed: these were
-    // `<li>` elements carrying an onClick, switched off with
-    // `pointer-events: none`, which exists for a mouse and for nothing else.
+    // element. Cypress cannot reproduce that default - a synthetic `{enter}` on
+    // a focused button fires no click - so what is asserted here is the element
+    // type that earns the behaviour, and the absence of `pointer-events: none`,
+    // which switches a control off for a mouse and for nothing else.
     stubGitHub();
     cy.visit('/');
     listedRepos().should('have.length', 10);

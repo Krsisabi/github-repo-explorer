@@ -40,9 +40,7 @@ export const Pagination = (props: PaginationProps) => {
   const lastPage = paginationRange.at(-1);
 
   // Every control is a real <button>: keyboard focus, Enter and Space, and the
-  // disabled state come from the element instead of being drawn with CSS. The
-  // previous version put onClick on <li>, which meant the list could only be
-  // used with a mouse - `pointer-events: none` is invisible to a screen reader.
+  // disabled state come from the element instead of being drawn with CSS.
   return (
     <nav aria-label="Pagination">
       <ul className={styles.paginationContainer} data-testid="pagination-block">

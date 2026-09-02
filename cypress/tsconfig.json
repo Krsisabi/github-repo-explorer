@@ -1,8 +1,8 @@
-// The specs were the last TypeScript in the repository nothing checked: the
-// app's tsconfig includes only `src` and `api`, and the tooling one only the
-// config files. Cypress compiles specs itself and does not typecheck them, so
-// a spec could reference a helper that no longer exists and only fail at run
-// time. `npm run typecheck` runs this project too.
+// Cypress compiles the specs but does not typecheck them, and neither of the
+// other two projects covers this folder - the app's includes only `src` and
+// `api`, the tooling one only the config files. Without this a spec could
+// reference a helper that no longer exists and fail only at run time.
+// `npm run typecheck` runs this project too.
 {
   "compilerOptions": {
     "target": "ESNext",

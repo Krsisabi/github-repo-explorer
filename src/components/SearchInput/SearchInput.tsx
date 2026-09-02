@@ -39,7 +39,7 @@ export const SearchInput = () => {
     if (debouncedSearchValue !== searchValue) return;
 
     // The URL already carries this query. Rewriting it changes nothing except
-    // dropping PAGE_KEY, which is how paging used to die on the second click.
+    // dropping PAGE_KEY.
     if (debouncedSearchValue === searchQueryParam) return;
 
     setSearchParams(

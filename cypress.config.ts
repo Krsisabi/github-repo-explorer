@@ -1,8 +1,8 @@
 import { defineConfig } from 'cypress';
 
 export default defineConfig({
-  // Nothing here reads Cypress.env(), and leaving the old bridge open lets any
-  // page code read whatever ends up in it.
+  // Nothing here reads Cypress.env(), and an open bridge lets any page code
+  // read whatever ends up in it.
   allowCypressEnv: false,
   e2e: {
     // The built bundle, served by `npm run preview`. Every call to GitHub is
